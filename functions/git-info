@@ -56,10 +56,22 @@ fi
 if [[ -n ${__GIT_INFO_BRANCH} ]]; then
   unset __GIT_INFO_POSITION
 
+  local max_length=32
+  if (( ${#__GIT_INFO_BRANCH} > max_length )); then
+    # Use shortened form like "long-branch-name<ellipsis>suffix"
+    local prefix_length=$(( max_length / 2 - 2 ))
+    local suffix_length=$(( max_length - prefix_length - 3 ))
+    local prefix="${__GIT_INFO_BRANCH[1,$((prefix_length))]}"
+    local suffix="${__GIT_INFO_BRANCH[-$((suffix_length)),-1]}"
+    shortened_branch="${prefix}…${suffix}"
+  else
+    shortened_branch="$__GIT_INFO_BRANCH"
+  fi
+
   # Format branch.
   local branch_format
   if zstyle -s ':zim:git-info:branch' format 'branch_format'; then
-    zformat -f branch_formatted ${branch_format} 'b:${__GIT_INFO_BRANCH}'
+    zformat -f branch_formatted ${branch_format} 'b:${shortened_branch}'
   fi
 
   local remote_format
